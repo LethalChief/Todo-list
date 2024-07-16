@@ -1,0 +1,99 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f7f7f7; /* Background color for the entire page */
+}
+
+h1 {
+  color: #ffffff; /* Text color for heading */
+  background-color: #007883; /* Background color for heading */
+  padding: 20px; /* Padding around heading */
+  text-align: center; /* Center align heading text */
+  margin-top: 0; /* Remove default margin from the top of <h1> */
+}
+
+form {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+form input[type="text"],
+form button {
+  padding: 10px;
+  margin: 5px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 300px; /* Set a width for the text input */
+}
+
+form button {
+  background-color: #007883;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+form button:hover {
+  background-color: #005f66;
+}
+
+table {
+  width: 80%;
+  margin: 20px auto;
+  border-collapse: collapse;
+  background-color: #fff; /* Background color for the table */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional: Box shadow for a subtle lift effect */
+}
+
+table th,
+table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #7fedf3;
+}
+
+table th {
+  background-color: #007883; /* Background color for table headers */
+  color: white; /* Text color for table headers */
+  font-weight: bold; /* Bold text for table headers */
+}
+
+table tr:nth-child(even) {
+  background-color: #adefec; /* Alternate row background color */
+}
+
+table tr:hover {
+  background-color: #ffffff; /* Hover background color */
+}
+
+table td a {
+  color: rgba(101, 13, 159, 0.701);
+  text-decoration: none;
+}
+
+table td a:hover {
+  text-decoration: underline;
+}
+
+.styled-button {
+  background-color: #007883; /* Blue background color */
+  color: white; /* White text color */
+  padding: 10px 20px; /* Padding around the button */
+  border: none; /* Remove border */
+  border-radius: 4px; /* Rounded corners */
+  cursor: pointer; /* Pointer cursor on hover */
+  width: 150px; /* Width of the button */
+  text-align: center; /* Center align the text */
+  font-size: 16px; /* Font size */
+  margin: 10px; /* Margin around the button */
+}
+
+.styled-button:hover {
+  background-color: #005f66; /* Darker blue on hover */
+}
+
+.input-field {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  box-sizing: border-box;
+}
