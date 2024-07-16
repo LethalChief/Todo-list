@@ -1,11 +1,5 @@
 {
   "version": 2,
   "builds": [{ "src": "public/*.php", "use": "@vercel/php" }],
-  "routes": [
-    { "src": "/", "dest": "/public/index.php" },
-    { "src": "/customize", "dest": "/public/customize.php" },
-    { "src": "/main", "dest": "/public/main_processes.php" },
-    { "src": "/login", "dest": "/public/login.php" },
-    { "src": "/signup", "dest": "/public/signup.php" }
-  ]
+  "routes": [{ "src": "/(.*)", "dest": "/public/$1" }]
 }
