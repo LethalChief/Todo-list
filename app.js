@@ -11,13 +11,6 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // Use environment variables from .env
-/*const db = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME,
-});*/
-
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -32,14 +25,7 @@ app.set("views", path.join(__dirname, "views"));
 
 app.use(express.static(path.join(__dirname, "public")));
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(
-  session({
-    secret: "your_secret_key",
-    resave: false,
-    saveUninitialized: true,
-    cookie: { maxAge: 1000000 },
-  })
-);
+app.use(bodyParser.json()); // To parse JSON bodies
 
 function checkAuth(req, res, next) {
   if (!req.session.userId) {
@@ -49,7 +35,6 @@ function checkAuth(req, res, next) {
 }
 
 // Routes
-
 app.get("/", (req, res) => {
   res.render("index");
 });
@@ -148,11 +133,7 @@ app.get("/delete_item/:id", (req, res) => {
   });
 });
 
-app.get("/main_processes", (req, res) => {
-  if (!req.session.userId) {
-    return res.redirect("/login");
-  }
-
+app.get("/main_processes", checkAuth, (req, res) => {
   const userId = req.session.userId;
   const username = req.session.nickname || req.session.username;
 
@@ -167,18 +148,11 @@ app.get("/main_processes", (req, res) => {
   });
 });
 
-app.get("/add_item_page", (req, res) => {
-  if (!req.session.userId) {
-    return res.redirect("/login");
-  }
+app.get("/add_item_page", checkAuth, (req, res) => {
   res.render("add_item_page");
 });
 
-app.post("/add_item", (req, res) => {
-  if (!req.session.userId) {
-    return res.redirect("/login");
-  }
-
+app.post("/add_item", checkAuth, (req, res) => {
   const { title, description, priority, due_date } = req.body;
   const userId = req.session.userId;
 
@@ -198,7 +172,7 @@ app.post("/add_item", (req, res) => {
   );
 });
 
-app.get("/edit_item/:id", (req, res) => {
+app.get("/edit_item/:id", checkAuth, (req, res) => {
   const id = req.params.id;
 
   const sql = "SELECT * FROM items WHERE id = ?";
@@ -214,7 +188,7 @@ app.get("/edit_item/:id", (req, res) => {
   });
 });
 
-app.post("/update_item", (req, res) => {
+app.post("/update_item", checkAuth, (req, res) => {
   const { id, title, description, priority, due_date } = req.body;
 
   const sql =
@@ -229,11 +203,7 @@ app.post("/update_item", (req, res) => {
   });
 });
 
-app.get("/customize", (req, res) => {
-  if (!req.session.userId) {
-    return res.redirect("/login");
-  }
-
+app.get("/customize", checkAuth, (req, res) => {
   const userId = req.session.userId;
   const defaultColors = {
     page_header_color: "#007883",
@@ -258,24 +228,26 @@ app.get("/customize", (req, res) => {
   });
 });
 
-app.post("/customize", (req, res) => {
-  if (!req.session.userId) {
-    return res.redirect("/login");
-  }
-
+app.post("/customize", checkAuth, (req, res) => {
   const userId = req.session.userId;
-  if (req.body.reset) {
-    const sql = "DELETE FROM user_customizations WHERE user_id = ?";
-    db.query(sql, [userId], (err) => {
-      if (err) {
-        console.error(err);
-        res.send("Database error");
-      } else {
-        res.redirect("/customize");
-      }
-    });
-  } else {
-    const {
+  const {
+    pageHeaderColor,
+    pageHeaderFontColor,
+    tableHeaderColor,
+    tableHeaderFontColor,
+    tableRowOddColor,
+    tableRowOddFontColor,
+    tableRowEvenColor,
+    tableRowEvenFontColor,
+  } = req.body;
+
+  const sql = `REPLACE INTO user_customizations (user_id, page_header_color, page_header_font_color, table_header_color, table_header_font_color, table_row_odd_color, table_row_odd_font_color, table_row_even_color, table_row_even_font_color)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+  db.query(
+    sql,
+    [
+      userId,
       pageHeaderColor,
       pageHeaderFontColor,
       tableHeaderColor,
@@ -284,34 +256,16 @@ app.post("/customize", (req, res) => {
       tableRowOddFontColor,
       tableRowEvenColor,
       tableRowEvenFontColor,
-    } = req.body;
-
-    const sql = `REPLACE INTO user_customizations (user_id, page_header_color, page_header_font_color, table_header_color, table_header_font_color, table_row_odd_color, table_row_odd_font_color, table_row_even_color, table_row_even_font_color)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-
-    db.query(
-      sql,
-      [
-        userId,
-        pageHeaderColor,
-        pageHeaderFontColor,
-        tableHeaderColor,
-        tableHeaderFontColor,
-        tableRowOddColor,
-        tableRowOddFontColor,
-        tableRowEvenColor,
-        tableRowEvenFontColor,
-      ],
-      (err) => {
-        if (err) {
-          console.error(err);
-          res.send("Database error");
-        } else {
-          res.redirect("/main_processes");
-        }
+    ],
+    (err) => {
+      if (err) {
+        console.error(err);
+        res.send("Database error");
+      } else {
+        res.redirect("/main_processes");
       }
-    );
-  }
+    }
+  );
 });
 
 app.listen(port, () => {

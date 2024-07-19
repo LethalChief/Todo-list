@@ -158,8 +158,8 @@
             <td><%= item.description %></td>
             <td><%= item.priority %></td>
             <td>
-              <%= item.due_date ? new Date(item.due_date).toLocaleString() :
-              'None' %>
+              <%= item.due_date && item.due_date !== '0000-00-00 00:00:00' ? new
+              Date(item.due_date).toLocaleString() : 'None' %>
             </td>
             <td><a href="/edit_item/<%= item.id %>">Edit</a></td>
             <td><a href="/delete_item/<%= item.id %>">Delete</a></td>

@@ -13,25 +13,21 @@
         border: 1px solid #ccc;
         border-radius: 10px;
       }
-
       .form-group {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 15px;
         margin-bottom: 15px;
       }
-
       .form-group label {
         grid-column: span 2;
         margin-bottom: 5px;
       }
-
       .preview {
         margin: 20px;
         padding: 20px;
         border: 1px solid #ccc;
       }
-
       .form-group input[type="color"] {
         width: 100%;
         height: 40px;
@@ -39,7 +35,6 @@
         border: none;
         cursor: pointer;
       }
-
       .form-group button {
         padding: 15px 20px;
         font-size: 16px;
@@ -48,11 +43,9 @@
         border: none;
         cursor: pointer;
       }
-
       .form-group button:hover {
         background-color: #005f66;
       }
-
       .save-button {
         background-color: #4caf50 !important;
         color: white;
@@ -63,17 +56,14 @@
         border-radius: 4px;
         transition: background-color 0.3s;
       }
-
       .save-button:hover {
         background-color: #337937 !important;
       }
-
       .button-container {
         display: flex;
         flex-direction: column;
         align-items: center;
       }
-
       .button-container .form-group {
         width: 100%;
         display: flex;
@@ -88,7 +78,7 @@
       id="form-container"
       data-default-colors="<%= JSON.stringify(defaultColors) %>"
     >
-      <form id="customize-form" method="post">
+      <form id="customize-form" method="post" action="/customize">
         <div class="form-group">
           <div>
             <label for="page-header-color">Page Header Color</label>
@@ -240,12 +230,6 @@
           formContainer.getAttribute("data-default-colors")
         );
 
-        document
-          .getElementById("customize-form")
-          .addEventListener("input", function () {
-            updatePreview();
-          });
-
         function updatePreview() {
           const pageHeaderColor =
             document.getElementById("page-header-color").value;
@@ -298,7 +282,11 @@
           });
         }
 
-        function resetToDefault() {
+        document
+          .getElementById("customize-form")
+          .addEventListener("input", updatePreview);
+
+        window.resetToDefault = function () {
           if (confirm("Are you sure you want to reset to default settings?")) {
             document.getElementById("page-header-color").value =
               defaultColors.page_header_color;
@@ -320,7 +308,7 @@
             // Update preview immediately
             updatePreview();
           }
-        }
+        };
 
         document
           .getElementById("customize-form")
@@ -356,7 +344,16 @@
             );
             alert("Customizations saved!");
 
-            window.location.href = "main_processes"; // Redirect to the main page
+            // Save to the server
+            fetch("/customize", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(customizations),
+            }).then(() => {
+              window.location.href = "main_processes"; // Redirect to the main page
+            });
           });
 
         const savedCustomizations = JSON.parse(
@@ -384,6 +381,16 @@
             .getElementById("customize-form")
             .dispatchEvent(new Event("input"));
         }
+
+        window.returnToTodoList = function () {
+          if (
+            confirm(
+              "Would you like to return to your todo-list? Your changes will not be saved."
+            )
+          ) {
+            window.location.href = "main_processes";
+          }
+        };
       });
     </script>
   </body>
