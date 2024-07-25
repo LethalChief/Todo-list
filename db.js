@@ -34,7 +34,7 @@ db.query(sql, (err, result) => {
     console.error("Error creating table:", err.message);
     return;
   }
-  console.log("Table `user_customizations` exists or created successfully");
+  console.log("Connection established");
 });
 
 module.exports = db;

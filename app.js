@@ -3,7 +3,7 @@ const session = require("express-session");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const path = require("path");
-const db = require("./db"); // Import the database configuration
+const db = require("./db");
 
 require("dotenv").config();
 
@@ -266,6 +266,124 @@ app.post("/customize", checkAuth, (req, res) => {
       }
     }
   );
+});
+
+const moment = require("moment-timezone");
+
+app.get("/api/events", checkAuth, (req, res) => {
+  const userId = req.session.userId;
+  const month = parseInt(req.query.month, 10);
+  const year = parseInt(req.query.year, 10);
+  const timeZone = req.query.timezone || "UTC";
+
+  const startDate = moment
+    .tz([year, month, 1], timeZone)
+    .startOf("day")
+    .toDate();
+  const endDate = moment.tz([year, month, 1], timeZone).endOf("month").toDate();
+
+  /*console.log(
+    `Fetching events for user_id: ${userId}, startDate: ${startDate}, endDate: ${endDate}`
+  );*/
+
+  const sql = `
+    SELECT title, due_date 
+    FROM items 
+    WHERE user_id = ? AND due_date BETWEEN ? AND ?
+  `;
+  db.query(sql, [userId, startDate, endDate], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send("Database error");
+    }
+
+    const events = results.map((event) => ({
+      title: event.title,
+      due_date: moment(event.due_date).tz(timeZone).format("YYYY-MM-DD"),
+    }));
+
+    //console.log("Database results:", results);
+    res.json(events);
+  });
+});
+
+app.get("/events", checkAuth, (req, res) => {
+  const userId = req.session.userId;
+  const date = req.query.date;
+  const timeZone = req.query.timezone || "UTC";
+
+  const sql = `
+    SELECT title, due_date 
+    FROM items 
+    WHERE user_id = ? AND DATE(due_date) = ?
+  `;
+  db.query(sql, [userId, date], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send("Database error");
+    }
+
+    const events = results.map((event) => ({
+      title: event.title,
+      due_date: moment(event.due_date).tz(timeZone).toISOString(),
+    }));
+
+    res.json(events);
+  });
+});
+
+app.get("/calendar", checkAuth, (req, res) => {
+  const userId = req.session.userId;
+  const month = parseInt(req.query.month, 10) || new Date().getMonth();
+  const year = parseInt(req.query.year, 10) || new Date().getFullYear();
+
+  const startDate = moment
+    .tz([year, month, 1], "America/New_York")
+    .startOf("day")
+    .toDate();
+  const endDate = moment
+    .tz([year, month + 1, 0], "America/New_York")
+    .endOf("day")
+    .toDate();
+
+  const sql = `
+    SELECT title, due_date 
+    FROM items 
+    WHERE user_id = ? AND due_date BETWEEN ? AND ?
+  `;
+  db.query(sql, [userId, startDate, endDate], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.send("Database error");
+    }
+
+    // Convert results to a simpler format
+    const events = results.map((event) => ({
+      title: event.title,
+      due_date: moment(event.due_date)
+        .tz("America/New_York")
+        .format("YYYY-MM-DD"),
+    }));
+
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const currentDate = new Date();
+    const days = Array.from({ length: daysInMonth }, (_, i) => ({
+      day: i + 1,
+      date: `${year}-${String(month + 1).padStart(2, "0")}-${String(
+        i + 1
+      ).padStart(2, "0")}`,
+      event: events.some(
+        (event) =>
+          moment(event.due_date).tz("America/New_York").date() === i + 1
+      ),
+      today:
+        currentDate.getFullYear() === year &&
+        currentDate.getMonth() === month &&
+        currentDate.getDate() === i + 1,
+    }));
+
+    res.render("calendar", { events, days, month, year });
+  });
 });
 
 app.listen(port, () => {

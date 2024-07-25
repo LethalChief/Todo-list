@@ -62,7 +62,7 @@ table tr:nth-child(even) {
 }
 
 table tr:hover {
-  background-color: #ffffff; /* Hover background color */
+  background-color: #bdbdbd; /* Hover background color */
 }
 
 table td a {

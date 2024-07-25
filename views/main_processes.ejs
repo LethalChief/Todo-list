@@ -12,12 +12,14 @@
         padding: 20px;
         text-align: center;
       }
+
       .nickname {
         font-size: 24px;
         font-weight: bold;
         color: #007883;
         margin-bottom: 20px;
       }
+
       .table-container {
         max-width: 1000px;
         margin: 0 auto;
@@ -27,41 +29,50 @@
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         position: relative;
       }
-      .customize-button {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        background-color: #023162;
+
+      .button-container {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+
+      .customize-button,
+      .calendar-button {
+        background-color: #007883;
         color: white;
         padding: 10px 20px;
         border: none;
         border-radius: 4px;
         cursor: pointer;
       }
-      .customize-button:hover {
-        background-color: #011c3a;
+
+      .customize-button:hover,
+      .calendar-button:hover {
+        background-color: #005f66;
       }
+
       table {
         width: 100%;
         border-collapse: collapse;
         margin-top: 20px;
       }
+
       th,
       td {
         border: 1px solid #ddd;
         padding: 10px;
         text-align: left;
       }
+
       th {
         background-color: #007883;
         color: white;
       }
+
       tr:nth-child(even) {
         background-color: #f2f2f2;
       }
-      tr:hover {
-        background-color: #ddd;
-      }
+
       .styled-button,
       .red-button {
         display: inline-block;
@@ -74,65 +85,46 @@
         cursor: pointer;
         transition: background-color 0.3s;
       }
+
       .styled-button {
         background-color: #4caf50;
       }
+
       .styled-button:hover {
         background-color: #337937;
       }
+
       .red-button {
         background-color: red;
       }
+
       .red-button:hover {
         background-color: darkred;
       }
     </style>
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const savedCustomizations = JSON.parse(
-          localStorage.getItem("customizations")
-        );
-        if (savedCustomizations) {
-          document.querySelector("h1").style.backgroundColor =
-            savedCustomizations.pageHeaderColor;
-          document.querySelector("h1").style.color =
-            savedCustomizations.pageHeaderFontColor; // Apply font color
-
-          document.querySelectorAll("th").forEach((th) => {
-            th.style.backgroundColor = savedCustomizations.tableHeaderColor;
-            th.style.color = savedCustomizations.tableHeaderFontColor; // Apply font color
-          });
-
-          document.querySelectorAll("tr:nth-child(odd)").forEach((row) => {
-            row.style.backgroundColor = savedCustomizations.tableRowOddColor;
-            row.style.color = savedCustomizations.tableRowOddFontColor; // Apply font color
-          });
-
-          document.querySelectorAll("tr:nth-child(even)").forEach((row) => {
-            row.style.backgroundColor = savedCustomizations.tableRowEvenColor;
-            row.style.color = savedCustomizations.tableRowEvenFontColor; // Apply font color
-          });
-        }
-      });
-    </script>
   </head>
   <body>
     <div class="table-container">
-      <button
-        onclick="window.location.href='/customize'"
-        class="customize-button"
-      >
-        Customize
-      </button>
-
+      <div class="button-container">
+        <button
+          onclick="window.location.href='/calendar'"
+          class="calendar-button"
+        >
+          Calendar
+        </button>
+        <button
+          onclick="window.location.href='customize'"
+          class="customize-button"
+        >
+          Customize
+        </button>
+      </div>
       <h1>To-Do List</h1>
-
       <div class="nickname">Welcome, <%= username %>!</div>
-
       <div style="text-align: center; margin-top: 20px">
         <button
           class="styled-button"
-          onclick="window.location.href='/add_item_page'"
+          onclick="window.location.href='add_item_page'"
         >
           Add New Item
         </button>
@@ -152,14 +144,14 @@
         </thead>
         <tbody>
           <% if (items.length > 0) { %> <% items.forEach(item => { %>
-          <tr class="<%= item.priority %>">
+          <tr>
             <td><%= new Date(item.time_added).toLocaleString() %></td>
             <td><%= item.title %></td>
             <td><%= item.description %></td>
             <td><%= item.priority %></td>
             <td>
-              <%= item.due_date && item.due_date !== '0000-00-00 00:00:00' ? new
-              Date(item.due_date).toLocaleString() : 'None' %>
+              <%= item.due_date ? new Date(item.due_date).toLocaleString() :
+              'None' %>
             </td>
             <td><a href="/edit_item/<%= item.id %>">Edit</a></td>
             <td><a href="/delete_item/<%= item.id %>">Delete</a></td>
