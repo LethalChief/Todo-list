@@ -282,10 +282,6 @@ app.get("/api/events", checkAuth, (req, res) => {
     .toDate();
   const endDate = moment.tz([year, month, 1], timeZone).endOf("month").toDate();
 
-  /*console.log(
-    `Fetching events for user_id: ${userId}, startDate: ${startDate}, endDate: ${endDate}`
-  );*/
-
   const sql = `
     SELECT title, due_date 
     FROM items 
@@ -302,7 +298,6 @@ app.get("/api/events", checkAuth, (req, res) => {
       due_date: moment(event.due_date).tz(timeZone).format("YYYY-MM-DD"),
     }));
 
-    //console.log("Database results:", results);
     res.json(events);
   });
 });
@@ -336,13 +331,14 @@ app.get("/calendar", checkAuth, (req, res) => {
   const userId = req.session.userId;
   const month = parseInt(req.query.month, 10) || new Date().getMonth();
   const year = parseInt(req.query.year, 10) || new Date().getFullYear();
+  const timeZone = req.query.timezone || "America/New_York";
 
   const startDate = moment
-    .tz([year, month, 1], "America/New_York")
+    .tz([year, month, 1], timeZone)
     .startOf("day")
     .toDate();
   const endDate = moment
-    .tz([year, month + 1, 0], "America/New_York")
+    .tz([year, month + 1, 0], timeZone)
     .endOf("day")
     .toDate();
 
@@ -357,12 +353,9 @@ app.get("/calendar", checkAuth, (req, res) => {
       return res.send("Database error");
     }
 
-    // Convert results to a simpler format
     const events = results.map((event) => ({
       title: event.title,
-      due_date: moment(event.due_date)
-        .tz("America/New_York")
-        .format("YYYY-MM-DD"),
+      due_date: moment(event.due_date).tz(timeZone).format("YYYY-MM-DD"),
     }));
 
     const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -374,7 +367,10 @@ app.get("/calendar", checkAuth, (req, res) => {
       ).padStart(2, "0")}`,
       event: events.some(
         (event) =>
-          moment(event.due_date).tz("America/New_York").date() === i + 1
+          event.due_date ===
+          `${year}-${String(month + 1).padStart(2, "0")}-${String(
+            i + 1
+          ).padStart(2, "0")}`
       ),
       today:
         currentDate.getFullYear() === year &&

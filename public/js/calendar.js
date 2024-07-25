@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const nextMonthBtn = document.getElementById("nextMonthBtn");
 
   let currentDate = new Date();
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   function updateCalendar() {
     const month = currentDate.getMonth();
@@ -43,9 +44,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const month = currentDate.getMonth();
     const year = currentDate.getFullYear();
 
-    //console.log(`Fetching events for month: ${month + 1}, year: ${year}`);
-
-    fetch(`/api/events?month=${month}&year=${year}`)
+    fetch(
+      `/api/events?month=${month}&year=${year}&timezone=${encodeURIComponent(
+        userTimeZone
+      )}`
+    )
       .then((response) => {
         if (!response.ok) {
           throw new Error("Network response was not ok " + response.statusText);
@@ -53,19 +56,15 @@ document.addEventListener("DOMContentLoaded", function () {
         return response.json();
       })
       .then((events) => {
-        //console.log("Events fetched:", events);
         events.forEach((event) => {
           const dayDiv = document.querySelector(
             `.calendar-day[data-date="${event.due_date}"]`
           );
-          //console.log(`Highlighting date: ${event.due_date}`);
           if (dayDiv) {
             dayDiv.classList.add("event");
             dayDiv.addEventListener("click", function () {
               displayEventsForDate(event.due_date);
             });
-          } else {
-            console.log(`No element found for date: ${event.due_date}`);
           }
         });
       })
@@ -75,7 +74,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function displayEventsForDate(date) {
-    fetch(`/events?date=${date}`)
+    fetch(`/events?date=${date}&timezone=${encodeURIComponent(userTimeZone)}`)
       .then((response) => response.json())
       .then((events) => {
         const eventList = document.getElementById("event-list");
