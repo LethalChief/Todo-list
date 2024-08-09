@@ -73,11 +73,7 @@
   </head>
   <body>
     <h1>Customize Interface</h1>
-    <div
-      class="form-container"
-      id="form-container"
-      data-default-colors="<%= JSON.stringify(defaultColors) %>"
-    >
+    <div class="form-container" id="form-container">
       <form id="customize-form" method="post" action="/customize">
         <div class="form-group">
           <div>
@@ -86,7 +82,7 @@
               type="color"
               id="page-header-color"
               name="pageHeaderColor"
-              value="<%= customizations.page_header_color || '#007883' %>"
+              value="<%= customizations.page_header_color %>"
             />
           </div>
           <div>
@@ -95,7 +91,7 @@
               type="color"
               id="table-header-color"
               name="tableHeaderColor"
-              value="<%= customizations.table_header_color || '#007883' %>"
+              value="<%= customizations.table_header_color %>"
             />
           </div>
           <div>
@@ -104,7 +100,7 @@
               type="color"
               id="table-row-odd-color"
               name="tableRowOddColor"
-              value="<%= customizations.table_row_odd_color || '#FFFFFF' %>"
+              value="<%= customizations.table_row_odd_color %>"
             />
           </div>
           <div>
@@ -115,7 +111,7 @@
               type="color"
               id="table-row-even-color"
               name="tableRowEvenColor"
-              value="<%= customizations.table_row_even_color || '#7fedf3' %>"
+              value="<%= customizations.table_row_even_color %>"
             />
           </div>
           <div>
@@ -124,7 +120,7 @@
               type="color"
               id="page-header-font-color"
               name="pageHeaderFontColor"
-              value="<%= customizations.page_header_font_color || '#FFFFFF' %>"
+              value="<%= customizations.page_header_font_color %>"
             />
           </div>
           <div>
@@ -133,7 +129,7 @@
               type="color"
               id="table-header-font-color"
               name="tableHeaderFontColor"
-              value="<%= customizations.table_header_font_color || '#FFFFFF' %>"
+              value="<%= customizations.table_header_font_color %>"
             />
           </div>
           <div>
@@ -144,7 +140,7 @@
               type="color"
               id="table-row-odd-font-color"
               name="tableRowOddFontColor"
-              value="<%= customizations.table_row_odd_font_color || '#000000' %>"
+              value="<%= customizations.table_row_odd_font_color %>"
             />
           </div>
           <div>
@@ -155,7 +151,7 @@
               type="color"
               id="table-row-even-font-color"
               name="tableRowEvenFontColor"
-              value="<%= customizations.table_row_even_font_color || '#000000' %>"
+              value="<%= customizations.table_row_even_font_color %>"
             />
           </div>
         </div>
@@ -225,11 +221,6 @@
           saveButton.style.backgroundColor = "#4CAF50";
         });
 
-        const formContainer = document.getElementById("form-container");
-        const defaultColors = JSON.parse(
-          formContainer.getAttribute("data-default-colors")
-        );
-
         function updatePreview() {
           const pageHeaderColor =
             document.getElementById("page-header-color").value;
@@ -257,10 +248,10 @@
           const previewHeader = document.querySelector("#preview h1");
           const previewTableHeaders = document.querySelectorAll("#preview th");
           const previewOddRows = document.querySelectorAll(
-            "#preview tr:nth-child(odd)"
+            "#preview tbody tr:nth-child(odd)"
           );
           const previewEvenRows = document.querySelectorAll(
-            "#preview tr:nth-child(even)"
+            "#preview tbody tr:nth-child(even)"
           );
 
           previewHeader.style.backgroundColor = pageHeaderColor;
@@ -288,6 +279,17 @@
 
         window.resetToDefault = function () {
           if (confirm("Are you sure you want to reset to default settings?")) {
+            const defaultColors = {
+              page_header_color: "#007883",
+              page_header_font_color: "#FFFFFF",
+              table_header_color: "#007883",
+              table_header_font_color: "#FFFFFF",
+              table_row_odd_color: "#FFFFFF",
+              table_row_odd_font_color: "#000000",
+              table_row_even_color: "#7fedf3",
+              table_row_even_font_color: "#000000",
+            };
+
             document.getElementById("page-header-color").value =
               defaultColors.page_header_color;
             document.getElementById("page-header-font-color").value =
@@ -338,11 +340,7 @@
               ).value,
             };
 
-            localStorage.setItem(
-              "customizations",
-              JSON.stringify(customizations)
-            );
-            alert("Customizations saved!");
+            console.log("Customizations being sent:", customizations);
 
             // Save to the server
             fetch("/customize", {
@@ -351,47 +349,38 @@
                 "Content-Type": "application/json",
               },
               body: JSON.stringify(customizations),
-            }).then(() => {
-              window.location.href = "main_processes"; // Redirect to the main page
-            });
+            })
+              .then((response) => {
+                if (!response.ok) {
+                  throw new Error("Failed to save customizations");
+                }
+                console.log("Server response:", response);
+                return response.json();
+              })
+              .then((data) => {
+                alert("Customizations saved!");
+                // Optionally update the UI or redirect
+                window.location.href = "/main_processes"; // Redirect to the main page
+              })
+              .catch((error) => {
+                console.error("Error saving customizations:", error);
+                alert("There was an error saving your customizations.");
+              });
           });
 
-        const savedCustomizations = JSON.parse(
-          localStorage.getItem("customizations")
-        );
-        if (savedCustomizations) {
-          document.getElementById("page-header-color").value =
-            savedCustomizations.pageHeaderColor;
-          document.getElementById("page-header-font-color").value =
-            savedCustomizations.pageHeaderFontColor;
-          document.getElementById("table-header-color").value =
-            savedCustomizations.tableHeaderColor;
-          document.getElementById("table-header-font-color").value =
-            savedCustomizations.tableHeaderFontColor;
-          document.getElementById("table-row-odd-color").value =
-            savedCustomizations.tableRowOddColor;
-          document.getElementById("table-row-odd-font-color").value =
-            savedCustomizations.tableRowOddFontColor;
-          document.getElementById("table-row-even-color").value =
-            savedCustomizations.tableRowEvenColor;
-          document.getElementById("table-row-even-font-color").value =
-            savedCustomizations.tableRowEvenFontColor;
-
-          document
-            .getElementById("customize-form")
-            .dispatchEvent(new Event("input"));
-        }
-
-        window.returnToTodoList = function () {
-          if (
-            confirm(
-              "Would you like to return to your todo-list? Your changes will not be saved."
-            )
-          ) {
-            window.location.href = "main_processes";
-          }
-        };
+        // Load the customizations from the database and update the preview
+        updatePreview();
       });
+
+      window.returnToTodoList = function () {
+        if (
+          confirm(
+            "Would you like to return to your todo-list? Your changes will not be saved."
+          )
+        ) {
+          window.location.href = "main_processes";
+        }
+      };
     </script>
   </body>
 </html>

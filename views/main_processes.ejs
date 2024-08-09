@@ -65,12 +65,26 @@
       }
 
       th {
-        background-color: #007883;
-        color: white;
+        background-color: <%= customizations.table_header_color %>;
+        color: <%= customizations.table_header_font_color %>;
+      }
+
+      tr:nth-child(odd) {
+        background-color: <%= customizations.table_row_odd_color %>;
+        color: <%= customizations.table_row_odd_font_color %>;
+      }
+
+      tr:nth-child(odd):hover {
+        background-color: #bdbdbd; /* or any other hover color you prefer */
       }
 
       tr:nth-child(even) {
-        background-color: #f2f2f2;
+        background-color: <%= customizations.table_row_even_color %>;
+        color: <%= customizations.table_row_even_font_color %>;
+      }
+
+      tr:nth-child(even):hover {
+        background-color: #bdbdbd; /* or any other hover color you prefer */
       }
 
       .styled-button,
@@ -119,7 +133,14 @@
           Customize
         </button>
       </div>
-      <h1>To-Do List</h1>
+      <h1
+        style="
+          background-color: <%= customizations.page_header_color %>;
+          color: <%= customizations.page_header_font_color %>;
+        "
+      >
+        To-Do List
+      </h1>
       <div class="nickname">Welcome, <%= username %>!</div>
       <div style="text-align: center; margin-top: 20px">
         <button

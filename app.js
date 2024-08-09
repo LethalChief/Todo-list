@@ -4,6 +4,8 @@ const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const path = require("path");
 const db = require("./db");
+const moment = require("moment-timezone");
+const mysql = require("mysql");
 
 require("dotenv").config();
 
@@ -17,6 +19,15 @@ app.use(
     resave: false,
     saveUninitialized: true,
     cookie: { maxAge: 1000000 },
+  })
+);
+
+app.use(bodyParser.json()); // Add bodyParser middleware
+app.use(
+  session({
+    secret: "your-secret-key",
+    resave: false,
+    saveUninitialized: true,
   })
 );
 
@@ -137,15 +148,51 @@ app.get("/main_processes", checkAuth, (req, res) => {
   const userId = req.session.userId;
   const username = req.session.nickname || req.session.username;
 
-  const sql = "SELECT * FROM items WHERE user_id = ?";
-  db.query(sql, [userId], (err, results) => {
-    if (err) {
-      console.error(err);
-      return res.send("Database error");
-    }
+  // Fetch user customizations from the database
+  const customizationSql =
+    "SELECT * FROM user_customizations WHERE user_id = ?";
+  db.query(
+    customizationSql,
+    [userId],
+    (customizationErr, customizationResult) => {
+      if (customizationErr) {
+        console.error("Customization database error:", customizationErr);
+        return res.send("Database error");
+      }
 
-    res.render("main_processes", { username, items: results });
-  });
+      // Set default customizations if none are found
+      const customizations =
+        customizationResult.length > 0
+          ? customizationResult[0]
+          : {
+              page_header_color: "#007883",
+              page_header_font_color: "#FFFFFF",
+              table_header_color: "#007883",
+              table_header_font_color: "#FFFFFF",
+              table_row_odd_color: "#FFFFFF",
+              table_row_odd_font_color: "#000000",
+              table_row_even_color: "#7fedf3",
+              table_row_even_font_color: "#000000",
+            };
+
+      console.log(
+        "Customizations being passed to main_processes.ejs:",
+        customizations
+      );
+
+      // Fetch to-do items for this user
+      const itemsSql = "SELECT * FROM items WHERE user_id = ?";
+      db.query(itemsSql, [userId], (itemsErr, items) => {
+        if (itemsErr) {
+          console.error("Items database error:", itemsErr);
+          return res.send("Database error");
+        }
+
+        // Render the main_processes page with items and customizations
+        res.render("main_processes", { username, items, customizations });
+      });
+    }
+  );
 });
 
 app.get("/add_item_page", checkAuth, (req, res) => {
@@ -210,9 +257,9 @@ app.get("/customize", checkAuth, (req, res) => {
     page_header_font_color: "#FFFFFF",
     table_header_color: "#007883",
     table_header_font_color: "#FFFFFF",
-    table_row_odd_color: "#7fedf3",
+    table_row_odd_color: "#FFFFFF",
     table_row_odd_font_color: "#000000",
-    table_row_even_color: "#FFFFFF",
+    table_row_even_color: "#7fedf3",
     table_row_even_font_color: "#000000",
   };
 
@@ -220,11 +267,12 @@ app.get("/customize", checkAuth, (req, res) => {
   db.query(sql, [userId], (err, result) => {
     if (err) {
       console.error(err);
-      res.send("Database error");
-    } else {
-      const customizations = result.length > 0 ? result[0] : {};
-      res.render("customize", { customizations, defaultColors });
+      return res.send("Database error");
     }
+
+    const customizations = result.length > 0 ? result[0] : defaultColors;
+
+    res.render("customize", { customizations });
   });
 });
 
@@ -240,6 +288,8 @@ app.post("/customize", checkAuth, (req, res) => {
     tableRowEvenColor,
     tableRowEvenFontColor,
   } = req.body;
+
+  console.log("Received customizations for user:", userId, req.body);
 
   const sql = `REPLACE INTO user_customizations (user_id, page_header_color, page_header_font_color, table_header_color, table_header_font_color, table_row_odd_color, table_row_odd_font_color, table_row_even_color, table_row_even_font_color)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
@@ -259,16 +309,13 @@ app.post("/customize", checkAuth, (req, res) => {
     ],
     (err) => {
       if (err) {
-        console.error(err);
-        res.send("Database error");
-      } else {
-        res.redirect("/main_processes");
+        console.error("Database error:", err);
+        return res.status(500).json({ error: "Database error" });
       }
+      res.status(200).json({ success: true });
     }
   );
 });
-
-const moment = require("moment-timezone");
 
 app.get("/api/events", checkAuth, (req, res) => {
   const userId = req.session.userId;

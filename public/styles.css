@@ -51,22 +51,8 @@ table td {
   border-bottom: 1px solid #7fedf3;
 }
 
-table th {
-  background-color: #007883; /* Background color for table headers */
-  color: white; /* Text color for table headers */
-  font-weight: bold; /* Bold text for table headers */
-}
-
-table tr:nth-child(even) {
-  background-color: #adefec; /* Alternate row background color */
-}
-
-table tr:hover {
-  background-color: #bdbdbd; /* Hover background color */
-}
-
 table td a {
-  color: rgba(101, 13, 159, 0.701);
+  color: rgba(123, 13, 159, 0.701);
   text-decoration: none;
 }
 
@@ -96,4 +82,61 @@ table td a:hover {
   padding: 10px;
   margin: 10px 0;
   box-sizing: border-box;
+}
+
+.event-item {
+  background-color: #e0f7fa; /* Light blue background */
+  border-left: 5px solid #007883; /* Blue left border */
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+.event-title {
+  color: #007883; /* Blue color for title */
+  text-align: left; /* Left align the title */
+  margin-top: 0px; /* Remove top margin */
+  margin-bottom: 10px; /* Add consistent bottom margin */
+}
+
+.event-time {
+  color: #007883; /* Blue color for time */
+  text-align: right;
+  margin-top: 0; /* Remove top margin */
+  margin-bottom: 10px; /* Add consistent bottom margin */
+}
+
+event-icon {
+  color: #007883;
+  font-size: 1.2em;
+}
+
+.event-label {
+  font-weight: bold;
+  color: #007883;
+  text-align: left;
+  flex: 1;
+  margin-bottom: 10px; /* Add consistent margin */
+}
+
+.event-time-label {
+  font-weight: bold;
+  color: #007883;
+  text-align: right;
+  flex: 1;
+  margin-bottom: 10px; /* Ensure consistent margin */
+}
+
+.event-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.event-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }

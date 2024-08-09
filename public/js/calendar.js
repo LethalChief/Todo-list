@@ -81,11 +81,48 @@ document.addEventListener("DOMContentLoaded", function () {
         eventList.innerHTML = "<h2>Events for " + formatDate(date) + "</h2>";
         events.forEach((event) => {
           const eventItem = document.createElement("div");
-          const eventTime = new Date(event.due_date).toLocaleTimeString([], {
+          eventItem.classList.add("event-item");
+
+          const eventIcon = document.createElement("span");
+          eventIcon.classList.add("event-icon");
+          eventIcon.innerHTML = "&#x1F4C5;"; // Calendar icon
+
+          const eventTitleLabel = document.createElement("div");
+          eventTitleLabel.classList.add("event-label");
+          eventTitleLabel.textContent = "Event:";
+
+          const eventTitle = document.createElement("div");
+          eventTitle.classList.add("event-title");
+          eventTitle.textContent = event.title;
+
+          const eventTimeLabel = document.createElement("div");
+          eventTimeLabel.classList.add("event-time-label");
+          eventTimeLabel.textContent = "Due Time:";
+
+          const eventTime = document.createElement("div");
+          const eventDate = new Date(event.due_date);
+          eventTime.classList.add("event-time");
+          eventTime.textContent = eventDate.toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
           });
-          eventItem.innerHTML = `<p>${event.title} - ${eventTime}</p>`;
+
+          const eventHeader = document.createElement("div");
+          eventHeader.classList.add("event-header");
+
+          eventHeader.appendChild(eventIcon);
+          eventHeader.appendChild(eventTitleLabel);
+          eventHeader.appendChild(eventTimeLabel);
+
+          const eventContent = document.createElement("div");
+          eventContent.classList.add("event-content");
+
+          eventContent.appendChild(eventTitle);
+
+          eventItem.appendChild(eventHeader);
+          eventItem.appendChild(eventContent);
+          eventItem.appendChild(eventTime);
+
           eventList.appendChild(eventItem);
         });
       });
